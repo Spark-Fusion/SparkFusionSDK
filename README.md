@@ -26,7 +26,7 @@
 
 ```kotlin
 dependencies {
-    implementation("com.sparkfusion.sdk:SparkFusionSDK:1.0.0")
+    implementation("com.github.Spark-Fusion:SparkFusionSDK:1.0.0")
 }
 ```
 
