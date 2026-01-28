@@ -38,7 +38,6 @@ android {
 }
 
 dependencies {
-    implementation("com.tencent:mmkv:2.0.2")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -47,7 +46,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 }
 group = "com.github.spark-fusion"
-version = "1.0.0"
+version = "1.0.1"
 
 afterEvaluate {
     publishing {
@@ -56,7 +55,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.sparkfusion.sdk"
                 artifactId = "SparkFusionSDK"
-                version = "1.0.0"
+                version = "1.0.1"
             }
         }
     }

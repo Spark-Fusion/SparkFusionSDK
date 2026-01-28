@@ -9,10 +9,10 @@ import android.text.TextPaint
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import com.sparkfusion.sdk.databinding.DialogPrivacyPolicyBinding
-import com.tencent.mmkv.MMKV
 
 /**
  * SparkFusionSDK 内部实现
@@ -20,13 +20,14 @@ import com.tencent.mmkv.MMKV
  */
 internal object SparkFusionSDKImpl : ISparkFusionSDK {
 
+    private val TAG="SparkFusionSDK"
     private lateinit var spannableString: SpannableString
     private val highlightText = "《隐私政策》"
     /**
      * @param context
      */
     override fun initialize(context: Context) {
-        MMKV.initialize(context)
+        Log.d(TAG,"${context}初始化成功")
     }
 
     /**
