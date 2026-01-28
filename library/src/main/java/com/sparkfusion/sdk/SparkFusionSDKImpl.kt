@@ -21,7 +21,6 @@ import com.tencent.mmkv.MMKV
 internal object SparkFusionSDKImpl : ISparkFusionSDK {
 
     private lateinit var spannableString: SpannableString
-//    private val fullText = "在使用本游戏前，请您充分阅读并理解《隐私政策》条约;1.保护用户隐私是本游戏的一项基本政策，本游戏不会泄露您的个人信息;2.我们会根据您使用的具体功能需要，收集必要的用户信息(如申请设备信息，存储等相关权限);3.在您同意App隐私政策后，我们将进行集成SDK的初始化工作，会收集您的android_id、Mac地址、IMEI和应用安装列表，以保障App正常数据统计和安全风控;4.为了方便您的查阅，您可以重新查看该协议;5.您可以阅读完整版的隐私保护政策了解我们申请使用相关权限的情况，以及对您个人隐私的保护措施。"
     private val highlightText = "《隐私政策》"
     /**
      * @param context
@@ -37,8 +36,6 @@ internal object SparkFusionSDKImpl : ISparkFusionSDK {
         context: Context,
         appname: String,
         onClickWeb: () -> Unit,
-        onAgreeText: String?,
-        onRefuseText: String?,
         onAgree: () -> Unit,
         onRefuse: () -> Unit,
     ) {
@@ -53,11 +50,10 @@ internal object SparkFusionSDKImpl : ISparkFusionSDK {
             setCanceledOnTouchOutside(false)
         }
         binding.title.text = "欢迎使用${appname}"
-        spannableString=SpannableString("在使用${appname}前，请您充分阅读并理解《隐私政策》条约;1.保护用户隐私是本游戏的一项基本政策，本游戏不会泄露您的个人信息;2.我们会根据您使用的具体功能需要，收集必要的用户信息(如申请设备信息，存储等相关权限);3.在您同意App隐私政策后，我们将进行集成SDK的初始化工作，会收集您的android_id、Mac地址、IMEI和应用安装列表，以保障App正常数据统计和安全风控;4.为了方便您的查阅，您可以重新查看该协议;5.您可以阅读完整版的隐私保护政策了解我们申请使用相关权限的情况，以及对您个人隐私的保护措施。")
-        onAgreeText?.let { binding.btnAgree.text=it }
-        onRefuseText?.let { binding.btnRefuse.text=it }
+        val fullText = "\u3000\u3000在使用${appname}前，请您充分阅读并理解${appname}《隐私政策》条约;\n\u3000\u30001.保护用户隐私是我们一项基本政策，${appname}不会泄露您的个人信息;\n\u3000\u30002.我们会根据您使用的具体功能需要，收集必要的用户信息(如申请设备信息，存储等相关权限);\n\u3000\u30003.在您同意${appname}《隐私政策》后，我们将进行集成SDK的初始化工作，会收集您的android_id、Mac地址、IMEI和应用安装列表，以保障App正常数据统计和安全风控;\n\u3000\u30004.您可以阅读完整版的《隐私政策》了解我们申请使用相关权限的情况，以及对您个人隐私的保护措施。"
+        spannableString = SpannableString(fullText)
 
-        getHighLightText(binding.content.text.toString(), onClick = {
+        getHighLightText(fullText, onClick = {
             onClickWeb()
         })
         // 应用到TextView
@@ -87,7 +83,7 @@ internal object SparkFusionSDKImpl : ISparkFusionSDK {
         onClick: () -> Unit
     ) {
         var lastIndex = 0
-        val colorSpan = ForegroundColorSpan(Color.parseColor("#FF0000"))
+        val colorSpan = ForegroundColorSpan(Color.parseColor("#33aaff"))
 
         // 循环查找所有匹配项
         while (lastIndex >= 0) {

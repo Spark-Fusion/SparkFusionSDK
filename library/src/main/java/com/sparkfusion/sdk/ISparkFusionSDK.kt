@@ -4,7 +4,6 @@ import android.content.Context
 
 /**
  * SparkFusionSDK 公共接口
- * 暴露给外部使用的 API
  */
 interface ISparkFusionSDK {
     /**
@@ -28,8 +27,6 @@ interface ISparkFusionSDK {
         context: Context,
         appname: String,
         onClickWeb: () -> Unit,
-        onAgreeText: String? = null,
-        onRefuseText: String? = null,
         onAgree: () -> Unit,
         onRefuse: () -> Unit,
     )

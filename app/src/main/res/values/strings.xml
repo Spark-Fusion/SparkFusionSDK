@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">SparkFusionSDK</string>
+    <string name="privacy_policy_title">隐私协议</string>
+    <string name="privacy_policy">https://docs.qq.com/doc/p/c78e4ee0b7fd74dc51206a0275c8a8a440989c0d</string>
 </resources>

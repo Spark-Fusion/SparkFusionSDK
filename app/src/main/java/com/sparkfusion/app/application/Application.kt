@@ -1,7 +1,6 @@
-package com.sparkfusion.app
+package com.sparkfusion.app.application
 
 import android.app.Application
-import androidx.appcompat.app.AppCompatDelegate
 import com.sparkfusion.sdk.SparkFusionSDK
 
 class Application : Application(){
@@ -12,8 +11,8 @@ class Application : Application(){
     override fun onCreate() {
         super.onCreate()
         instance = this
-        //初始化
-
+        AppContextHolder.init(this)
+        //初始化(包含MMKV)
         SparkFusionSDK.initialize(this)
     }
 }

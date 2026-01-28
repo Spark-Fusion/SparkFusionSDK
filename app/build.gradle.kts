@@ -41,6 +41,8 @@ android {
 
 dependencies {
     implementation(project(":library"))
+    implementation("com.tencent:mmkv:2.0.2")
+    implementation("com.github.Spark-Fusion:SparkFusionAD:1.0.0")
     // 存储数据
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
