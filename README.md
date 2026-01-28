@@ -1,5 +1,9 @@
 # SparkFusionSDK
 
+[![](https://jitpack.io/v/Spark-Fusion/SparkFusionSDK.svg)](https://jitpack.io/#Spark-Fusion/SparkFusionSDK)
+![Android](https://img.shields.io/badge/Android-3DDC84?style=flat&logo=android&logoColor=white)
+![Kotlin](https://img.shields.io/badge/Kotlin-0095D5?&style=flat&logo=kotlin&logoColor=white)
+
 一个用于 Android 应用的隐私政策对话框 SDK，帮助开发者快速集成隐私政策展示功能。
 
 ## 功能特性
