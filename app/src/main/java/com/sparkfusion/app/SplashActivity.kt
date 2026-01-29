@@ -6,52 +6,35 @@ import android.os.CountDownTimer
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import com.sparkfusion.app.application.SdkManager
-import com.sparkfusion.app.config.AppConfig
 import com.sparkfusion.app.databinding.ActivitySplashBinding
 import com.sparkfusion.sdk.SparkFusionSDK
 import com.sparkfusionad.sdk.SparkFusionAd
 
 class SplashActivity : AppCompatActivity(){
     private lateinit var binding: ActivitySplashBinding
-    private lateinit var appConfig: AppConfig
     var canJumpImmediately: Boolean = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        appConfig = AppConfig()
-        if (appConfig.getFirst()) {
-            SparkFusionSDK.showPrivacyPolicyDialog(this, appname = getString(R.string.app_name),
-                onClickWeb = {
-                    WebViewActivity.start(this,getString(R.string.privacy_policy_title),getString(R.string.privacy_policy))
-                },
-                onAgree = {
-                    if(SdkManager.initAd()){
-                        SparkFusionAd.loadSFSplashAd( this)
-                        SparkFusionAd.showSFSplashAd(binding.fl, {
-                            startActivity()
-                        })
-                    }else{
-                        countdown()
-                    }
-                    appConfig.setFirst(false)
-                },
-                onRefuse = {
-                    finish()
+        // 每次调用 showPrivacyPolicyDialog：已同意则直接 onAgree 不弹窗，未同意则弹窗
+        SparkFusionSDK.showPrivacyPolicyDialog(
+            this,
+            appname = getString(R.string.app_name),
+            onClickWeb = {
+                WebViewActivity.start(this, getString(R.string.privacy_policy_title), getString(R.string.privacy_policy))
+            },
+            onAgree = {
+                if (SdkManager.initAd()) {
+                    SparkFusionAd.loadSFSplashAd(this)
+                    SparkFusionAd.showSFSplashAd(binding.fl) { startActivity() }
+                } else {
+                    countdown()
                 }
-            )
-        } else {
-            //初始化插屏广告
-            if(SdkManager.initAd()){
-                SparkFusionAd.loadSFSplashAd( this)
-                SparkFusionAd.showSFSplashAd(binding.fl, {
-                    startActivity()
-                })
-            }else{
-                countdown()
-            }
-        }
+            },
+            onRefuse = { finish() }
+        )
     }
     //倒计时
     private fun countdown() {

@@ -11,7 +11,8 @@
 - ✅ **隐私政策对话框**：提供美观的隐私政策展示对话框
 - ✅ **文本高亮**：自动高亮《隐私政策》文本，支持点击跳转
 - ✅ **自定义应用名称**：支持自定义应用名称，自动生成个性化内容
-- ✅ **数据存储**：基于 MMKV 的高性能数据存储
+- ✅ **轻量存储**：基于 SharedPreferences 记录是否已同意，已同意时直接回调不弹窗
+- ✅ **撤回同意**：提供撤回隐私政策同意的确认弹窗，闭包回调
 - ✅ **接口封装**：清晰的接口设计，实现细节不对外暴露（Repository 模式）
 - ✅ **易于集成**：简单易用的 API，快速集成到项目中
 - ✅ **不可取消对话框**：确保用户必须做出选择，符合隐私政策合规要求
@@ -30,7 +31,7 @@
 
 ```kotlin
 dependencies {
-    implementation("com.github.Spark-Fusion:SparkFusionSDK:1.0.0")
+    implementation("com.github.Spark-Fusion:SparkFusionSDK:1.0.2")
 }
 ```
 
@@ -51,112 +52,85 @@ class MyApplication : Application() {
 
 ## 使用方法
 
-### 显示隐私政策对话框
+### 显示隐私政策对话框（推荐：每次启动都调用）
 
-在需要显示隐私政策的地方（如启动页、主页面）调用：
+SDK 内部会记录用户是否已同意。**已同意时直接执行 `onAgree` 回调，不弹窗**；未同意时才展示对话框。因此可在启动页每次都调用，无需自行判断：
 
 ```kotlin
 SparkFusionSDK.showPrivacyPolicyDialog(
     context = this,
     appname = "我的应用",
     onClickWeb = {
-        // 点击《隐私政策》文本时的回调
-        // 可以在这里打开隐私政策网页
+        // 点击《隐私政策》文本时的回调，可打开隐私政策网页
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://your-privacy-policy-url.com"))
         startActivity(intent)
     },
     onAgree = {
-        // 用户点击"同意"按钮的回调
-        // 可以在这里保存用户同意状态，进入应用主界面等
+        // 用户同意（含已同意过直接回调的情况）
         Toast.makeText(this, "已同意隐私政策", Toast.LENGTH_SHORT).show()
+        navigateToMainScreen()
     },
     onRefuse = {
-        // 用户点击"拒绝"按钮的回调
-        // 可以在这里处理拒绝逻辑，如退出应用
+        // 用户点击"拒绝"按钮
         finish()
     }
 )
 ```
 
-### 完整示例
+### 查询是否已同意
 
 ```kotlin
-class MainActivity : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        
-        // 检查是否已同意隐私政策
-        if (!hasAgreedPrivacyPolicy()) {
-            showPrivacyPolicyDialog()
-        } else {
-            navigateToMainScreen()
-        }
-    }
-    
-    private fun showPrivacyPolicyDialog() {
-        SparkFusionSDK.showPrivacyPolicyDialog(
-            context = this,
-            appname = getString(R.string.app_name),
-            onClickWeb = {
-                // 打开隐私政策网页
-                val url = "https://your-privacy-policy-url.com"
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                startActivity(intent)
-            },
-            onAgree = {
-                // 用户同意后的处理
-                savePrivacyAgreementStatus(true)
-                navigateToMainScreen()
-            },
-            onRefuse = {
-                // 用户拒绝后的处理
-                savePrivacyAgreementStatus(false)
-                // 可以显示提示信息或退出应用
-                Toast.makeText(this, "需要同意隐私政策才能使用应用", Toast.LENGTH_LONG).show()
-                finish()
-            }
-        )
-    }
-    
-    private fun hasAgreedPrivacyPolicy(): Boolean {
-        // 检查用户是否已同意隐私政策
-        val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        return prefs.getBoolean("privacy_agreed", false)
-    }
-    
-    private fun savePrivacyAgreementStatus(agreed: Boolean) {
-        // 保存用户同意状态
-        val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        prefs.edit().putBoolean("privacy_agreed", agreed).apply()
-    }
-    
-    private fun navigateToMainScreen() {
-        // 导航到应用主界面
-        // ...
-    }
+val agreed = SparkFusionSDK.isPrivacyPolicyAgreed(context)
+```
+
+### 撤回隐私政策同意
+
+在设置等场景下，可展示撤回确认弹窗；用户确认后清除同意状态，并执行闭包回调：
+
+```kotlin
+SparkFusionSDK.showRevokePrivacyPolicyDialog(this) {
+    Toast.makeText(this, "已撤回隐私政策同意，下次启动将再次展示", Toast.LENGTH_SHORT).show()
 }
 ```
 
-### 使用浏览器打开隐私政策页面
+### 强制展示弹窗（如测试场景）
 
-推荐使用系统浏览器或自定义 WebView 打开隐私政策页面：
+需要强制弹出隐私政策对话框时（例如测试），可传入 `forceShow = true`：
 
 ```kotlin
 SparkFusionSDK.showPrivacyPolicyDialog(
     context = this,
-    appname = "我的应用",
-    onClickWeb = {
-        // 方式1: 使用系统浏览器打开
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://your-privacy-policy-url.com"))
-        startActivity(intent)
-        
-        // 方式2: 使用自定义 WebView Activity 打开（需要自行实现）
-        // WebViewActivity.start(this, "隐私政策", "https://your-privacy-policy-url.com")
-    },
+    appname = getString(R.string.app_name),
+    onClickWeb = { /* ... */ },
     onAgree = { /* ... */ },
-    onRefuse = { /* ... */ }
+    onRefuse = { /* ... */ },
+    forceShow = true  // 已同意也会弹窗
 )
+```
+
+### 完整示例（启动页）
+
+```kotlin
+class SplashActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_splash)
+
+        // 每次启动都调用即可，已同意则直接 onAgree 不弹窗
+        SparkFusionSDK.showPrivacyPolicyDialog(
+            context = this,
+            appname = getString(R.string.app_name),
+            onClickWeb = {
+                WebViewActivity.start(this, "隐私政策", "https://your-privacy-policy-url.com")
+            },
+            onAgree = {
+                // 进入主流程（广告/主页等）
+                loadAdOrNavigateToMain()
+            },
+            onRefuse = { finish() }
+        )
+    }
+}
 ```
 
 ## API 文档
@@ -175,14 +149,15 @@ SparkFusionSDK.initialize(applicationContext)
 
 ### `showPrivacyPolicyDialog(...)`
 
-显示隐私政策对话框。
+显示隐私政策对话框。若已同意过（轻量存储记录），则直接执行 `onAgree` 不弹窗。
 
 **参数：**
 - `context`: Context - 上下文对象
 - `appname`: String - 应用名称，会显示在对话框标题中
 - `onClickWeb`: () -> Unit - 点击《隐私政策》文本时的回调
-- `onAgree`: () -> Unit - 用户点击"同意"按钮的回调
-- `onRefuse`: () -> Unit - 用户点击"拒绝"按钮的回调
+- `onAgree`: () -> Unit - 用户同意后的回调（含已同意直接回调）
+- `onRefuse`: () -> Unit - 用户点击「拒绝」按钮的回调
+- `forceShow`: Boolean - 是否强制展示弹窗（默认 false），用于测试
 
 **示例：**
 ```kotlin
@@ -195,9 +170,24 @@ SparkFusionSDK.showPrivacyPolicyDialog(
 )
 ```
 
+### `isPrivacyPolicyAgreed(context: Context): Boolean`
+
+查询用户是否已同意隐私政策（由 SDK 轻量存储记录）。
+
+### `showRevokePrivacyPolicyDialog(context: Context, onRevoked: () -> Unit)`
+
+展示撤回隐私政策同意的确认弹窗。用户确认撤回后清除同意状态并执行 `onRevoked` 回调。
+
+**示例：**
+```kotlin
+SparkFusionSDK.showRevokePrivacyPolicyDialog(this) {
+    // 撤回完成后的逻辑
+}
+```
+
 ## 对话框特性
 
-- **不可取消**：对话框设置为不可取消（点击外部和返回键都不会关闭），确保用户必须做出选择
+- **不可取消**：隐私政策对话框设置为不可取消（点击外部和返回键都不会关闭），确保用户必须做出选择
 - **文本高亮**：自动高亮所有《隐私政策》文本，颜色为 `#33aaff`（蓝色）
 - **点击跳转**：点击高亮的《隐私政策》文本会触发 `onClickWeb` 回调，可在回调中打开网页或跳转页面
 - **自动生成内容**：对话框内容会根据应用名称自动生成，包含隐私政策相关说明
@@ -205,23 +195,21 @@ SparkFusionSDK.showPrivacyPolicyDialog(
 
 ### 对话框内容说明
 
-对话框会自动生成以下内容：
 - 标题：欢迎使用{应用名称}
 - 内容：包含隐私政策说明，其中《隐私政策》文本会被高亮并可点击
-- 按钮：提供"同意"和"拒绝"两个按钮
+- 按钮：提供「同意」和「拒绝」两个按钮
 
 ## 注意事项
 
 1. **初始化时机**：必须在 Application 的 `onCreate()` 中初始化 SDK，且只能初始化一次
 2. **Context 使用**：`showPrivacyPolicyDialog` 需要 Activity Context，不能使用 Application Context
-3. **对话框行为**：对话框默认不可取消，用户必须选择"同意"或"拒绝"，符合隐私政策合规要求
-4. **存储依赖**：SDK 使用 MMKV 进行数据存储，初始化时会自动初始化 MMKV
+3. **对话框行为**：隐私政策对话框默认不可取消，用户必须选择「同意」或「拒绝」，符合隐私政策合规要求
+4. **存储方式**：SDK 使用 SharedPreferences（轻量存储）记录是否已同意，无需额外依赖
 5. **文本高亮**：所有出现的《隐私政策》文本都会被高亮，支持多次点击
-6. **线程安全**：SDK 采用单例模式，线程安全，可在任意线程调用
+6. **线程安全**：SDK 采用单例模式，可在主线程调用
 
 ## 依赖库
 
-- `com.tencent:mmkv:2.0.2` - 高性能键值存储
 - `androidx.core:core-ktx` - AndroidX Core KTX
 - `androidx.appcompat:appcompat` - AndroidX AppCompat
 - `com.google.android.material:material` - Material Design 组件
@@ -241,11 +229,20 @@ SDK 采用 **Repository 模式**，将接口和实现分离：
 
 ## 版本历史
 
+### v1.0.2
+- ✨ 轻量存储记录是否已同意隐私政策（SharedPreferences）
+- ✨ 已同意时直接执行 `onAgree` 回调，不展示弹窗
+- ✨ 新增 `isPrivacyPolicyAgreed(context)` 查询是否已同意
+- ✨ 新增 `showRevokePrivacyPolicyDialog(context, onRevoked)` 撤回隐私政策同意弹窗
+- ✨ `showPrivacyPolicyDialog` 新增可选参数 `forceShow`，用于测试强制弹窗
+
+### v1.0.1
+- 功能优化与维护
+
 ### v1.0.0
 - ✨ 初始版本发布
 - ✨ 支持隐私政策对话框显示
 - ✨ 支持文本高亮和点击跳转
-- ✨ 基于 MMKV 的数据存储
 - ✨ Repository 模式架构设计
 
 ## 常见问题
@@ -254,10 +251,13 @@ SDK 采用 **Repository 模式**，将接口和实现分离：
 A: 当前版本暂不支持自定义样式，对话框采用 Material Design 设计。如需自定义样式，可以 fork 项目进行修改。
 
 ### Q: 如何判断用户是否已同意隐私政策？
-A: SDK 不负责存储用户同意状态，需要开发者自行实现存储逻辑（可使用 SharedPreferences 或 MMKV）。
+A: 直接调用 `SparkFusionSDK.isPrivacyPolicyAgreed(context)`，由 SDK 内部轻量存储记录。
+
+### Q: 用户想撤回同意怎么办？
+A: 调用 `SparkFusionSDK.showRevokePrivacyPolicyDialog(context) { ... }`，会弹出确认对话框，用户确认后清除同意状态并在闭包中回调。
 
 ### Q: 可以在多个地方显示对话框吗？
-A: 可以，但建议只在应用启动时显示一次，避免重复打扰用户。
+A: 可以。推荐在启动页每次都调用 `showPrivacyPolicyDialog`，已同意时不会弹窗，只会执行 `onAgree` 回调。
 
 ### Q: 对话框支持国际化吗？
 A: 当前版本暂不支持国际化，对话框文本为中文。如需支持多语言，可以 fork 项目进行扩展。
@@ -280,5 +280,4 @@ A: 当前版本暂不支持国际化，对话框文本为中文。如需支持�
 ## 致谢
 
 感谢以下开源项目的支持：
-- [MMKV](https://github.com/Tencent/MMKV) - 高性能键值存储
 - [AndroidX](https://developer.android.com/jetpack/androidx) - Android 扩展库
