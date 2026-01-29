@@ -9,14 +9,33 @@
     tools:context=".MainActivity">
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/btnTestPrivacyDialog"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:text="加载插屏广告"
+        android:layout_marginTop="24dp"
+        android:text="测试隐私政策弹窗"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btnRevokePrivacy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="撤回隐私政策同意"
+        app:layout_constraintEnd_toEndOf="@+id/btnTestPrivacyDialog"
+        app:layout_constraintStart_toStartOf="@+id/btnTestPrivacyDialog"
+        app:layout_constraintTop_toBottomOf="@+id/btnTestPrivacyDialog" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="加载插屏广告"
+        app:layout_constraintEnd_toEndOf="@+id/btnRevokePrivacy"
+        app:layout_constraintStart_toStartOf="@+id/btnRevokePrivacy"
+        app:layout_constraintTop_toBottomOf="@+id/btnRevokePrivacy" />
 
     <Button
         android:id="@+id/button2"

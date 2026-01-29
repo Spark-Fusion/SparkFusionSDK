@@ -46,7 +46,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 }
 group = "com.github.spark-fusion"
-version = "1.0.1"
+version = "1.0.2"
 
 afterEvaluate {
     publishing {
@@ -55,7 +55,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.sparkfusion.sdk"
                 artifactId = "SparkFusionSDK"
-                version = "1.0.1"
+                version = "1.0.2"
             }
         }
     }

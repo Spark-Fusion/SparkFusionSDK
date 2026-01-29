@@ -13,6 +13,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import com.sparkfusion.sdk.databinding.DialogPrivacyPolicyBinding
+import com.sparkfusion.sdk.databinding.DialogRevokePrivacyBinding
 
 /**
  * SparkFusionSDK 内部实现
@@ -30,8 +31,12 @@ internal object SparkFusionSDKImpl : ISparkFusionSDK {
         Log.d(TAG,"${context}初始化成功")
     }
 
+    override fun isPrivacyPolicyAgreed(context: Context): Boolean {
+        return PrivacyPreferences.isAgreed(context)
+    }
+
     /**
-     * 启动页用户须知
+     * 启动页用户须知；已同意则直接 onAgree 不弹窗
      */
     override fun showPrivacyPolicyDialog(
         context: Context,
@@ -39,7 +44,12 @@ internal object SparkFusionSDKImpl : ISparkFusionSDK {
         onClickWeb: () -> Unit,
         onAgree: () -> Unit,
         onRefuse: () -> Unit,
+        forceShow: Boolean,
     ) {
+        if (!forceShow && PrivacyPreferences.isAgreed(context)) {
+            onAgree()
+            return
+        }
         // 获取 ViewBinding
         val binding = DialogPrivacyPolicyBinding.inflate(LayoutInflater.from(context))
         val dialog = Dialog(context, R.style.dialog_center).apply {
@@ -70,11 +80,31 @@ internal object SparkFusionSDKImpl : ISparkFusionSDK {
         }
 
         binding.btnAgree.setOnClickListener {
+            PrivacyPreferences.setAgreed(context, true)
             onAgree()
             dialog.dismiss()
         }
 
         // 显示对话框
+        dialog.show()
+    }
+
+    override fun showRevokePrivacyPolicyDialog(
+        context: Context,
+        onRevoked: () -> Unit,
+    ) {
+        val binding = DialogRevokePrivacyBinding.inflate(LayoutInflater.from(context))
+        val dialog = Dialog(context, R.style.dialog_center).apply {
+            setContentView(binding.root)
+            setCancelable(true)
+            setCanceledOnTouchOutside(true)
+        }
+        binding.btnCancel.setOnClickListener { dialog.dismiss() }
+        binding.btnConfirm.setOnClickListener {
+            PrivacyPreferences.clearAgreed(context)
+            dialog.dismiss()
+            onRevoked()
+        }
         dialog.show()
     }
 
